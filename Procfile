@@ -1,1 +1,1 @@
-web: python news_bot.py
+worker: python news_bot.py
