@@ -6,6 +6,7 @@ import random
 
 from config import BOT_TOKEN, CHANNEL_ID, RSS_FEEDS
 from utils.translator import translate_text
+from utils.summarizer import summarize_text
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(bot)
@@ -26,35 +27,22 @@ def extract_main_keyword(text):
 
 def get_emoji(keyword):
     emoji_map = {
-        "фрс": "🏦",
-        "ставка": "🏦",
-        "інфляція": "📈",
-        "криза": "💥",
-        "рецесія": "💥",
-        "економіка": "🌍",
-        "s&p": "📉",
-        "s & p": "📉",
-        "криптовалюта": "🪙",
-        "bitcoin": "🪙",
-        "ethereum": "🪙",
-        "crypto": "🪙",
+        "фрс": "🏦", "ставка": "🏦", "інфляція": "📈",
+        "криза": "💥", "рецесія": "💥", "економіка": "🌍",
+        "s&p": "📉", "s & p": "📉",
+        "криптовалюта": "🪙", "bitcoin": "🪙",
+        "ethereum": "🪙", "crypto": "🪙",
     }
     return emoji_map.get(keyword, "🗞️")
 
 def get_hashtags(keyword):
     tags_map = {
-        "фрс": "#фрс #центробанк",
-        "ставка": "#ставка #монетарнаполітика",
-        "інфляція": "#інфляція #ціни",
-        "криза": "#криза #спад",
-        "рецесія": "#рецесія #економіка",
-        "економіка": "#економіка",
-        "s&p": "#ринок #акції",
-        "s & p": "#ринок #акції",
-        "криптовалюта": "#крипта #bitcoin",
-        "bitcoin": "#bitcoin #btc",
-        "ethereum": "#ethereum #eth",
-        "crypto": "#crypto #altcoin",
+        "фрс": "#фрс #центробанк", "ставка": "#ставка #монетарнаполітика",
+        "інфляція": "#інфляція #ціни", "криза": "#криза #спад",
+        "рецесія": "#рецесія #економіка", "економіка": "#економіка",
+        "s&p": "#ринок #акції", "s & p": "#ринок #акції",
+        "криптовалюта": "#крипта #bitcoin", "bitcoin": "#bitcoin #btc",
+        "ethereum": "#ethereum #eth", "crypto": "#crypto #altcoin",
     }
     return tags_map.get(keyword, "")
 
@@ -80,33 +68,32 @@ async def fetch_and_post():
                 link = entry.link
 
                 if link in posted_links:
-                    print(f"🔁 Пропущено: {title} (вже постили)")
                     continue
 
-                # Отримуємо повний текст
+                # Повний текст
                 full_text = ""
                 if 'summary' in entry:
                     full_text = entry.summary
                 elif 'content' in entry and len(entry.content) > 0:
                     full_text = entry.content[0].value
 
-                # Визначаємо мову
                 is_ukrainian = any(src in feed_url for src in [
                     "epravda", "ukrinform", "liga.net", "mind.ua", "forbes.ua"
                 ])
 
-                # Переклад якщо потрібно
                 translated_title = title if is_ukrainian else translate_text(title)
                 translated_text = full_text if is_ukrainian else translate_text(full_text)
+                ai_summary = summarize_text(full_text) if not is_ukrainian else ""
 
                 main_kw = extract_main_keyword(title)
                 emoji = get_emoji(main_kw)
                 hashtags = get_hashtags(main_kw)
 
-                # Формуємо повідомлення
-                message = f"{emoji} <b>{translated_title}</b>\n\n{translated_text.strip()}\n\n{hashtags}"
+                message = f"{emoji} <b>{translated_title}</b>\n"
+                if ai_summary:
+                    message += f"\n🧠 <b>AI-зведення:</b> {ai_summary.strip()}"
+                message += f"\n\n{translated_text.strip()}\n\n{hashtags}\n🔗 <a href='{link}'>Читати повністю</a>"
 
-                # Обмеження Telegram
                 if len(message) > 4000:
                     message = message[:3900] + "\n... (скорочено)"
 
@@ -114,8 +101,8 @@ async def fetch_and_post():
                     await bot.send_message(
                         chat_id=CHANNEL_ID,
                         text=message,
-                        parse_mode=types.ParseMode.HTML,
-                        disable_web_page_preview=True
+                        parse_mode=types.ParseMode.HTML
+                        # ! Прев’ю ввімкнено (нема disable_web_page_preview)
                     )
                     print(f"✅ Опубліковано: {translated_title}")
                     posted_links.add(link)
