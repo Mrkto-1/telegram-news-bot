@@ -1,18 +1,19 @@
 # utils/translator.py
 
 import requests
-from config import DEEPL_API_KEY
 
-def translate_text(text, target_lang="UK"):
+def translate_text(text, target_lang="uk"):
     try:
-        response = requests.post(
-            "https://api-free.deepl.com/v2/translate",
-            data={
-                "auth_key": DEEPL_API_KEY,
-                "text": text,
-                "target_lang": target_lang,
-            },
-        )
-        return response.json()["translations"][0]["text"]
+        url = "https://translate.googleapis.com/translate_a/single"
+        params = {
+            "client": "gtx",
+            "sl": "auto",
+            "tl": target_lang,
+            "dt": "t",
+            "q": text,
+        }
+        response = requests.get(url, params=params)
+        result = response.json()
+        return "".join([item[0] for item in result[0]])
     except Exception as e:
         return f"[Переклад помилка] {e}"
