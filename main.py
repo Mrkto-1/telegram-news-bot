@@ -10,8 +10,7 @@ from utils.translator import translate_text
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(bot)
 posted_links = set()
-
-FIRST_RUN = True  # одразу 3 новини
+FIRST_RUN = True
 
 def extract_main_keyword(text):
     text_lower = text.lower()
@@ -63,7 +62,7 @@ async def fetch_and_post():
     global FIRST_RUN
     while True:
         now = datetime.now()
-        if not (6 <= now.hour < 24 or now.hour < 2):  # час 06:00 – 02:00
+        if not (6 <= now.hour < 24 or now.hour < 2):
             print("⏸ За межами активного часу")
             await asyncio.sleep(600)
             continue
@@ -84,22 +83,55 @@ async def fetch_and_post():
                     print(f"🔁 Пропущено: {title} (вже постили)")
                     continue
 
+                # Отримуємо повний текст
+                full_text = ""
+                if 'summary' in entry:
+                    full_text = entry.summary
+                elif 'content' in entry and len(entry.content) > 0:
+                    full_text = entry.content[0].value
+
+                # Визначаємо мову
                 is_ukrainian = any(src in feed_url for src in [
                     "epravda", "ukrinform", "liga.net", "mind.ua", "forbes.ua"
                 ])
+
+                # Переклад якщо потрібно
                 translated_title = title if is_ukrainian else translate_text(title)
+                translated_text = full_text if is_ukrainian else translate_text(full_text)
 
                 main_kw = extract_main_keyword(title)
                 emoji = get_emoji(main_kw)
                 hashtags = get_hashtags(main_kw)
 
-                message = f"{emoji} <b>{translated_title}</b>\n\n{hashtags}\n🔗 <a href='{link}'>Читати повністю</a>"
+                # Формуємо повідомлення
+                message = f"{emoji} <b>{translated_title}</b>\n\n{translated_text.strip()}\n\n{hashtags}"
+
+                # Обмеження Telegram
+                if len(message) > 4000:
+                    message = message[:3900] + "\n... (скорочено)"
 
                 try:
                     await bot.send_message(
                         chat_id=CHANNEL_ID,
                         text=message,
-                        parse_mode=types.ParseMode.HTML
+                        parse_mode=types.ParseMode.HTML,
+                        disable_web_page_preview=True
                     )
                     print(f"✅ Опубліковано: {translated_title}")
+                    posted_links.add(link)
+                    found += 1
+                    await asyncio.sleep(5)
+                except Exception as e:
+                    print(f"❌ Помилка надсилання: {e}")
 
+                if found >= (3 if FIRST_RUN else 1):
+                    break
+
+        FIRST_RUN = False
+        delay = random.randint(1200, 1300)
+        print(f"🕒 Наступна перевірка через {delay // 60} хв")
+        await asyncio.sleep(delay)
+
+if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(fetch_and_post())
