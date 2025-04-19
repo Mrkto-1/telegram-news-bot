@@ -2,3 +2,5 @@ aiogram==2.25.1
 feedparser
 openai
 requests
+transformers
+torch
