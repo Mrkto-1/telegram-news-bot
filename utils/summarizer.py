@@ -1,10 +1,13 @@
-import openai
+# utils/summarizer.py
+
+from openai import OpenAI
 from config import OPENAI_API_KEY
-openai.api_key = OPENAI_API_KEY
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 def summarize_text(text):
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Скороти новину до 1-2 речень українською. Без води, лише суть."},
@@ -15,4 +18,4 @@ def summarize_text(text):
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        return f"[AI-зведення помилка] {e}"
+        return f"[Ai-зведення помилка] {e}"
