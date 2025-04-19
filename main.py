@@ -17,8 +17,7 @@ keywords_used_today = set()
 KEYWORDS = ["фрс", "ставка", "інфляція", "економіка", "криза", "рецесія", "s&p", "s & p"]
 KEYWORDS_CRYPTO = ["криптовалюта", "біткоїн", "bitcoin", "ethereum", "crypto"]
 
-# дозволено для старту
-FIRST_RUN = True
+FIRST_RUN = True  # на старті публікує 3
 
 def contains_keywords(text):
     text_lower = text.lower()
@@ -39,7 +38,8 @@ async def fetch_and_post():
     global FIRST_RUN
     while True:
         now = datetime.now()
-        if not (6 <= now.hour or now.hour < 2):
+        if not (6 <= now.hour < 24 or now.hour < 2):
+            print("⏸ За межами активного часу")
             await asyncio.sleep(600)
             continue
 
@@ -56,13 +56,16 @@ async def fetch_and_post():
                 link = entry.link
 
                 if link in posted_links:
+                    print(f"🔁 Пропущено: {title} (вже постили)")
                     continue
 
                 if not contains_keywords(title):
+                    print(f"❌ Пропущено: {title} (без ключових слів)")
                     continue
 
                 main_kw = extract_main_keyword(title)
                 if main_kw in keywords_used_today:
+                    print(f"⛔ Пропущено: {title} (тема вже була: {main_kw})")
                     continue
 
                 translated_title = translate_text(title)
@@ -70,6 +73,7 @@ async def fetch_and_post():
 
                 try:
                     await bot.send_message(chat_id=CHANNEL_ID, text=message, parse_mode=types.ParseMode.HTML)
+                    print(f"✅ Опубліковано: {translated_title}")
                     posted_links.add(link)
                     if main_kw:
                         keywords_used_today.add(main_kw)
@@ -82,7 +86,9 @@ async def fetch_and_post():
                     break
 
         FIRST_RUN = False
-        await asyncio.sleep(60 * 20)  # 20 хвилин
+        delay = random.randint(1200, 1300)  # 20+ хв
+        print(f"🕒 Наступна перевірка через {delay // 60} хв")
+        await asyncio.sleep(delay)
 
 
 if __name__ == '__main__':
