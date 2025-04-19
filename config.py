@@ -1,11 +1,13 @@
-BOT_TOKEN = "7870264120:AAEyLGcjffejYseO6ueDP0jcCKtyecVBhzc"
+import os
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = "@worldnews_ua2025"
 
 ACTIVE_HOURS = (6, 24)
 BLACKLIST = ["спорт", "мода", "музика", "кіно", "розваги", "серіали", "футбол"]
 
-OPENAI_API_KEY = "your-openai-key-here"
-DEEPL_API_KEY = "your-deepl-api-key-here"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+DEEPL_API_KEY = os.getenv("DEEPL_API_KEY")
 
 RSS_FEEDS = [
     "https://feeds.reuters.com/reuters/businessNews",
