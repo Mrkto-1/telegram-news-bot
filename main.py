@@ -11,7 +11,6 @@ from utils.translator import translate_text
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(bot)
-
 posted_links = set()
 
 async def fetch_and_post():
@@ -42,7 +41,7 @@ async def fetch_and_post():
                 except Exception as e:
                     print(f"❌ Помилка надсилання: {e}")
 
-        await asyncio.sleep(random.randint(1200, 1800))  # 20–30 хв
+        await asyncio.sleep(random.randint(1200, 1800))
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
