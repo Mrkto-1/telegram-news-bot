@@ -87,7 +87,11 @@ async def fetch_and_post():
                     print(f"⛔ Пропущено: {title} (тема вже була: {main_kw})")
                     continue
 
-                translated_title = translate_text(title)
+                is_ukrainian = any(feed in feed_url for feed in [
+    "epravda", "ukrinform", "liga.net", "mind.ua", "forbes.ua"
+])
+translated_title = title if is_ukrainian else translate_text(title)
+
                 emoji = get_emoji(main_kw)
                 message = f"{emoji} <b>{translated_title}</b>\n🔗 <a href='{link}'>Читати повністю</a>"
 
