@@ -6,7 +6,6 @@ import random
 
 from config import BOT_TOKEN, CHANNEL_ID, ACTIVE_HOURS, RSS_FEEDS
 from utils.filters import is_relevant
-from utils.summarizer import summarize_text
 from utils.translator import translate_text
 
 bot = Bot(token=BOT_TOKEN)
@@ -29,10 +28,9 @@ async def fetch_and_post():
                 if link in posted_links or not is_relevant(title):
                     continue
 
-                summary = summarize_text(entry.summary if 'summary' in entry else title)
-                translation = translate_text(summary)
+                translated_title = translate_text(title)
 
-                message = f"📉 <b>{title}</b>\n\n🧠 {translation}\n🌍 <a href='{link}'>Джерело</a>"
+                message = f"📉 <b>{translated_title}</b>\n🌍 <a href='{link}'>Джерело</a>"
 
                 try:
                     await bot.send_message(chat_id=CHANNEL_ID, text=message, parse_mode=types.ParseMode.HTML)
