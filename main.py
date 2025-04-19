@@ -5,33 +5,22 @@ from datetime import datetime
 import random
 
 from config import BOT_TOKEN, CHANNEL_ID, RSS_FEEDS
-from utils.filters import is_relevant
 from utils.translator import translate_text
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(bot)
 posted_links = set()
-keywords_used_today = set()
 
-# ключові слова
-KEYWORDS = ["фрс", "ставка", "інфляція", "економіка", "криза", "рецесія", "s&p", "s & p"]
-KEYWORDS_CRYPTO = ["криптовалюта", "біткоїн", "bitcoin", "ethereum", "crypto"]
-
-FIRST_RUN = True  # 3 новини одразу на старті
-
-def contains_keywords(text):
-    text_lower = text.lower()
-    if any(kw in text_lower for kw in KEYWORDS):
-        return True
-    if any(kw in text_lower for kw in KEYWORDS_CRYPTO) and (
-        "крах" in text_lower or "регулювання" in text_lower or "заборона" in text_lower
-    ):
-        return True
-    return False
+FIRST_RUN = True  # одразу 3 новини
 
 def extract_main_keyword(text):
     text_lower = text.lower()
-    for kw in KEYWORDS + KEYWORDS_CRYPTO:
+    keywords = [
+        "фрс", "ставка", "інфляція", "економіка",
+        "криза", "рецесія", "s&p", "s & p",
+        "криптовалюта", "біткоїн", "bitcoin", "ethereum", "crypto"
+    ]
+    for kw in keywords:
         if kw in text_lower:
             return kw
     return None
@@ -74,7 +63,7 @@ async def fetch_and_post():
     global FIRST_RUN
     while True:
         now = datetime.now()
-        if not (6 <= now.hour < 24 or now.hour < 2):  # з 06:00 до 02:00
+        if not (6 <= now.hour < 24 or now.hour < 2):  # час 06:00 – 02:00
             print("⏸ За межами активного часу")
             await asyncio.sleep(600)
             continue
@@ -95,44 +84,21 @@ async def fetch_and_post():
                     print(f"🔁 Пропущено: {title} (вже постили)")
                     continue
 
-                if not contains_keywords(title):
-                    print(f"❌ Пропущено: {title} (без ключових слів)")
-                    continue
+                is_ukrainian = any(src in feed_url for src in [
+                    "epravda", "ukrinform", "liga.net", "mind.ua", "forbes.ua"
+                ])
+                translated_title = title if is_ukrainian else translate_text(title)
 
                 main_kw = extract_main_keyword(title)
-                if main_kw in keywords_used_today:
-                    print(f"⛔ Пропущено: {title} (тема вже була: {main_kw})")
-                    continue
-
-                is_ukrainian = any(feed in feed_url for feed in [
-    "epravda", "ukrinform", "liga.net", "mind.ua", "forbes.ua"
-])
-translated_title = title if is_ukrainian else translate_text(title)
-
                 emoji = get_emoji(main_kw)
                 hashtags = get_hashtags(main_kw)
-message = f"{emoji} <b>{translated_title}</b>\n\n{hashtags}\n🔗 <a href='{link}'>Читати повністю</a>"
 
+                message = f"{emoji} <b>{translated_title}</b>\n\n{hashtags}\n🔗 <a href='{link}'>Читати повністю</a>"
 
                 try:
-                    await bot.send_message(chat_id=CHANNEL_ID, text=message, parse_mode=types.ParseMode.HTML)
-                    print(f"✅ Опубліковано: {translated_title}")
-                    posted_links.add(link)
-                    if main_kw:
-                        keywords_used_today.add(main_kw)
-                    found += 1
-                    await asyncio.sleep(5)
-                except Exception as e:
-                    print(f"❌ Помилка надсилання: {e}")
-
-                if found >= (3 if FIRST_RUN else 1):
-                    break
-
-        FIRST_RUN = False
-        delay = random.randint(1200, 1300)  # 20–21 хв
-        print(f"🕒 Наступна перевірка через {delay // 60} хв")
-        await asyncio.sleep(delay)
-
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(fetch_and_post())
+                    await bot.send_message(
+                        chat_id=CHANNEL_ID,
+                        text=message,
+                        parse_mode=types.ParseMode.HTML
+                    )
+                    print(f
