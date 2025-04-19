@@ -101,4 +101,5 @@ async def fetch_and_post():
                         text=message,
                         parse_mode=types.ParseMode.HTML
                     )
-                    print(f
+                    print(f"✅ Опубліковано: {translated_title}")
+
