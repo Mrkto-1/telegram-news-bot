@@ -19,9 +19,14 @@ async def fetch_and_post():
             await asyncio.sleep(600)
             continue
 
+        found = False  # щоби публікувати лише 1 новину за раз
+
         for feed_url in RSS_FEEDS:
+            if found:
+                break
+
             feed = feedparser.parse(feed_url)
-            for entry in feed.entries[:5]:
+            for entry in feed.entries:
                 title = entry.title
                 link = entry.link
 
@@ -29,13 +34,13 @@ async def fetch_and_post():
                     continue
 
                 translated_title = translate_text(title)
-
-                message = f"📉 <b>{translated_title}</b>\n🌍 <a href='{link}'>Джерело</a>"
+                message = f"📉 <b>{translated_title}</b>\n\n🔗 <a href='{link}'>Читати повністю</a>"
 
                 try:
                     await bot.send_message(chat_id=CHANNEL_ID, text=message, parse_mode=types.ParseMode.HTML)
                     posted_links.add(link)
-                    await asyncio.sleep(5)
+                    found = True
+                    break  # опублікували 1 новину → виходимо з циклу
                 except Exception as e:
                     print(f"❌ Помилка надсилання: {e}")
 
