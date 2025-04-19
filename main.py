@@ -53,6 +53,23 @@ def get_emoji(keyword):
     }
     return emoji_map.get(keyword, "🗞️")
 
+def get_hashtags(keyword):
+    tags_map = {
+        "фрс": "#фрс #центробанк",
+        "ставка": "#ставка #монетарнаполітика",
+        "інфляція": "#інфляція #ціни",
+        "криза": "#криза #спад",
+        "рецесія": "#рецесія #економіка",
+        "економіка": "#економіка",
+        "s&p": "#ринок #акції",
+        "s & p": "#ринок #акції",
+        "криптовалюта": "#крипта #bitcoin",
+        "bitcoin": "#bitcoin #btc",
+        "ethereum": "#ethereum #eth",
+        "crypto": "#crypto #altcoin",
+    }
+    return tags_map.get(keyword, "")
+
 async def fetch_and_post():
     global FIRST_RUN
     while True:
@@ -93,7 +110,9 @@ async def fetch_and_post():
 translated_title = title if is_ukrainian else translate_text(title)
 
                 emoji = get_emoji(main_kw)
-                message = f"{emoji} <b>{translated_title}</b>\n🔗 <a href='{link}'>Читати повністю</a>"
+                hashtags = get_hashtags(main_kw)
+message = f"{emoji} <b>{translated_title}</b>\n\n{hashtags}\n🔗 <a href='{link}'>Читати повністю</a>"
+
 
                 try:
                     await bot.send_message(chat_id=CHANNEL_ID, text=message, parse_mode=types.ParseMode.HTML)
