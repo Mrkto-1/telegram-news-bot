@@ -17,13 +17,15 @@ keywords_used_today = set()
 KEYWORDS = ["фрс", "ставка", "інфляція", "економіка", "криза", "рецесія", "s&p", "s & p"]
 KEYWORDS_CRYPTO = ["криптовалюта", "біткоїн", "bitcoin", "ethereum", "crypto"]
 
-FIRST_RUN = True  # на старті публікує 3
+FIRST_RUN = True  # 3 новини одразу на старті
 
 def contains_keywords(text):
     text_lower = text.lower()
     if any(kw in text_lower for kw in KEYWORDS):
         return True
-    if any(kw in text_lower for kw in KEYWORDS_CRYPTO) and ("крах" in text_lower or "регулювання" in text_lower or "заборона" in text_lower):
+    if any(kw in text_lower for kw in KEYWORDS_CRYPTO) and (
+        "крах" in text_lower or "регулювання" in text_lower or "заборона" in text_lower
+    ):
         return True
     return False
 
@@ -34,11 +36,28 @@ def extract_main_keyword(text):
             return kw
     return None
 
+def get_emoji(keyword):
+    emoji_map = {
+        "фрс": "🏦",
+        "ставка": "🏦",
+        "інфляція": "📈",
+        "криза": "💥",
+        "рецесія": "💥",
+        "економіка": "🌍",
+        "s&p": "📉",
+        "s & p": "📉",
+        "криптовалюта": "🪙",
+        "bitcoin": "🪙",
+        "ethereum": "🪙",
+        "crypto": "🪙",
+    }
+    return emoji_map.get(keyword, "🗞️")
+
 async def fetch_and_post():
     global FIRST_RUN
     while True:
         now = datetime.now()
-        if not (6 <= now.hour < 24 or now.hour < 2):
+        if not (6 <= now.hour < 24 or now.hour < 2):  # з 06:00 до 02:00
             print("⏸ За межами активного часу")
             await asyncio.sleep(600)
             continue
@@ -69,7 +88,8 @@ async def fetch_and_post():
                     continue
 
                 translated_title = translate_text(title)
-                message = f"📉 <b>{translated_title}</b>\n🔗 <a href='{link}'>Читати повністю</a>"
+                emoji = get_emoji(main_kw)
+                message = f"{emoji} <b>{translated_title}</b>\n🔗 <a href='{link}'>Читати повністю</a>"
 
                 try:
                     await bot.send_message(chat_id=CHANNEL_ID, text=message, parse_mode=types.ParseMode.HTML)
@@ -86,10 +106,9 @@ async def fetch_and_post():
                     break
 
         FIRST_RUN = False
-        delay = random.randint(1200, 1300)  # 20+ хв
+        delay = random.randint(1200, 1300)  # 20–21 хв
         print(f"🕒 Наступна перевірка через {delay // 60} хв")
         await asyncio.sleep(delay)
-
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
