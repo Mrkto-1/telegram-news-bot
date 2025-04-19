@@ -66,4 +66,25 @@ async def fetch_and_post():
                     continue
 
                 translated_title = translate_text(title)
-                message = f"📉 <b>{translated_title}</b>\n🔗 <a href='{link}'>Чит_
+                message = f"📉 <b>{translated_title}</b>\n🔗 <a href='{link}'>Читати повністю</a>"
+
+                try:
+                    await bot.send_message(chat_id=CHANNEL_ID, text=message, parse_mode=types.ParseMode.HTML)
+                    posted_links.add(link)
+                    if main_kw:
+                        keywords_used_today.add(main_kw)
+                    found += 1
+                    await asyncio.sleep(5)
+                except Exception as e:
+                    print(f"❌ Помилка надсилання: {e}")
+
+                if found >= (3 if FIRST_RUN else 1):
+                    break
+
+        FIRST_RUN = False
+        await asyncio.sleep(60 * 20)  # 20 хвилин
+
+
+if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(fetch_and_post())
