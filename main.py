@@ -6,6 +6,7 @@ import random
 
 from config import BOT_TOKEN, CHANNEL_ID, RSS_FEEDS
 from utils.translator import translate_text
+from utils.summarizer import summarize_text
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(bot)
@@ -80,12 +81,17 @@ async def fetch_and_post():
 
                 translated_title = title if is_ukrainian else translate_text(title)
                 translated_text = full_text if is_ukrainian else translate_text(full_text)
+                ai_summary = ""
+                if not is_ukrainian:
+                    ai_summary = summarize_text(full_text)
 
                 main_kw = extract_main_keyword(title)
                 emoji = get_emoji(main_kw)
                 hashtags = get_hashtags(main_kw)
 
                 message = f"{emoji} <b>{translated_title}</b>\n"
+                if ai_summary:
+                    message += f"\n{ai_summary.strip()}"
                 message += f"\n\n{translated_text.strip()}\n\n{hashtags}"
 
                 if len(message) > 4000:
