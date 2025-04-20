@@ -3,7 +3,6 @@ import feedparser
 from aiogram import Bot, Dispatcher, types
 from datetime import datetime
 import random
-import os
 
 from config import BOT_TOKEN, CHANNEL_ID, RSS_FEEDS
 from utils.translator import translate_text
@@ -34,7 +33,7 @@ def get_emoji(keyword):
         "криптовалюта": "🪙", "bitcoin": "🪙",
         "ethereum": "🪙", "crypto": "🪙",
     }
-    return emoji_map.get(keyword, "📲")
+    return emoji_map.get(keyword, "🗞️")
 
 def get_hashtags(keyword):
     tags_map = {
@@ -117,7 +116,6 @@ async def fetch_and_post():
         print(f"🕒 Наступна перевірка через {delay // 60} хв")
         await asyncio.sleep(delay)
 
-# Запуск основного циклу
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop.run_until_complete(fetch_and_post())
