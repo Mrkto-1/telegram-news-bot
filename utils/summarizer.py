@@ -1,18 +1,35 @@
-from transformers import pipeline
+import requests
+import os
 
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+token = os.getenv("HF_API_TOKEN") or "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"
+headers = {
+    "Authorization": f"Bearer {token}"
+}
 
-def summarize_text(text):
+API_URL = "https://api-inference.huggingface.co/models/DeepSeek-ai/deepseek-coder-6.7b-instruct"
+
+def summarize_text(text, max_length=120, min_length=30):
     try:
-        text = text.strip()
-        if not text or len(text.split()) < 20:
-            return "[AI-зведення недоступне: надто короткий текст]"
+        clean_text = text.replace("\n", " ").strip()
+        trimmed = clean_text[:3000]  # max safe size for free HF inference
 
-        input_len = len(text.split())
-        max_len = max(24, min(120, input_len // 2))
-        min_len = max(10, min(40, input_len // 4))
+        prompt = f"Скороти цей текст до 2-3 речень українською мовою:\n\n{trimmed}"
 
-        summary = summarizer(text, max_length=max_len, min_length=min_len, do_sample=False)
-        return summary[0]['summary_text']
+        payload = {
+            "inputs": prompt,
+            "parameters": {
+                "do_sample": False,
+                "max_new_tokens": max_length
+            }
+        }
+
+        response = requests.post(API_URL, headers=headers, json=payload)
+        response.raise_for_status()
+        result = response.json()
+
+        if isinstance(result, list) and "generated_text" in result[0]:
+            return result[0]["generated_text"].replace(prompt, "").strip()
+        else:
+            return "[Зведення недоступне]"
     except Exception as e:
-        return f"[AI-зведення недоступне] {e}"
+        return f"[Помилка AI-зведення: {e}]"
