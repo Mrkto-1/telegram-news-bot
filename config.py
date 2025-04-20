@@ -1,7 +1,8 @@
 import os
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = "@worldnews_ua2025"
+CHANNEL_ID = "CHANNEL_ID = "-1002475588533"
+"
 
 ACTIVE_HOURS = (6, 24)
 
