@@ -89,10 +89,11 @@ async def fetch_and_post():
                 emoji = get_emoji(main_kw)
                 hashtags = get_hashtags(main_kw)
 
+                # Формуємо повідомлення
                 message = f"{emoji} <b>{translated_title}</b>\n"
                 if ai_summary:
-                    message += f"\n🧠 <b>AI-зведення:</b> {ai_summary.strip()}"
-                message += f"\n\n{translated_text.strip()}\n\n{hashtags}\n🔗 <a href='{link}'>Читати повністю</a>"
+                    message += f"\n{ai_summary.strip()}"
+                message += f"\n\n{translated_text.strip()}\n\n{hashtags}"
 
                 if len(message) > 4000:
                     message = message[:3900] + "\n... (скорочено)"
@@ -102,7 +103,6 @@ async def fetch_and_post():
                         chat_id=CHANNEL_ID,
                         text=message,
                         parse_mode=types.ParseMode.HTML
-                        # ! Прев’ю ввімкнено (нема disable_web_page_preview)
                     )
                     print(f"✅ Опубліковано: {translated_title}")
                     posted_links.add(link)
