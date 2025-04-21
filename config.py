@@ -1,29 +1,25 @@
 import os
 
-# Токени
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = os.getenv("CHANNEL_ID")
+CHANNEL_ID = os.getenv("CHANNEL_ID", "@worldnews_ua2025")
 
-# Години активності бота (6:00–23:00)
+# Години активності (06:00 — 23:00)
 ACTIVE_HOURS = (6, 23)
 
-# Ключові слова — новини, що нас цікавлять
+# Список ключових слів для фільтрації
 KEYWORDS = [
-    "фрс", "ставка", "інфляція", "економіка", "криза",
-    "рецесія", "s&p", "s & p"
+    "фрс", "ставка", "економіка", "інфляція",
+    "криза", "рецесія", "s&p", "s & p"
 ]
 
-# Новини про крипту — тільки якщо щось важливе
 KEYWORDS_CRYPTO = [
     "криптовалюта", "біткоїн", "bitcoin", "ethereum", "crypto"
 ]
 
-# 🔥 Тільки валідні українські джерела
+# Надійні українські джерела новин (економіка)
 RSS_FEEDS = [
-    "https://www.epravda.com.ua/rss/",
-    "https://biz.liga.net/ekonomika/rss.xml",
-    "https://delo.ua/rss/all/",
-    "https://zn.ua/rss.xml",
-    "https://www.unian.ua/static/rss/business.xml",
-    "https://interfax.com.ua/news/economic.rss"
+    "https://www.epravda.com.ua/rss/",                    # Економічна правда
+    "https://biz.liga.net/ekonomika/rss.xml",           # Liga.net
+    "https://mind.ua/rss/news",                         # Mind.ua
+    "https://forbes.ua/rss"                              # Forbes Україна
 ]
