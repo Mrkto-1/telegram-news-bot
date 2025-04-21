@@ -1,17 +1,21 @@
 import os
 
+# 🔐 Токен твого Telegram-бота
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+# 📢 ID каналу, куди бот буде надсилати новини (без @)
 CHANNEL_ID = "-1002475588533"
+
+# ⏰ Час, коли бот активний (з 6:00 до 24:00 ночі)
 ACTIVE_HOURS = (6, 24)
 
-BLACKLIST = ["спорт", "мода", "музика", "кіно", "розваги", "серіали", "футбол"]
+# ❌ Теми, які потрібно ігнорувати
+BLACKLIST = [
+    "спорт", "мода", "музика", "кіно", "розваги", "серіали", "футбол"
+]
 
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
-
+# 📡 RSS-джерела (лише українські або ті, де часто є український контент)
 RSS_FEEDS = [
-    "https://feeds.reuters.com/reuters/businessNews",
-    "https://www.cnbc.com/id/100003114/device/rss/rss.html",
-    "https://www.marketwatch.com/rss/topstories",
     "https://www.epravda.com.ua/rss/",
     "https://www.ukrinform.ua/rss/economics",
     "https://biz.liga.net/ekonomika/rss.xml",
