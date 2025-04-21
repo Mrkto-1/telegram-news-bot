@@ -5,6 +5,7 @@ import sqlite3
 from aiogram import Bot, Dispatcher
 from datetime import datetime
 from config import BOT_TOKEN, CHANNEL_ID, RSS_FEEDS, ACTIVE_HOURS, KEYWORDS, KEYWORDS_CRYPTO
+from utils.filters import is_blacklisted
 
 # Ініціалізація бота
 bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
@@ -66,6 +67,8 @@ async def fetch_and_post():
                     if not image_url:
                         continue
                     if is_link_posted(link):
+                        continue
+                    if is_blacklisted(title + summary):
                         continue
                     if not contains_keywords(title + summary):
                         continue
